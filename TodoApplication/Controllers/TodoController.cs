@@ -22,7 +22,7 @@ namespace TodoApplication.Controllers
         public async Task<IActionResult> GetItems()
         {
             var items = await _apiDbContext.Items.ToListAsync();
-            List<ItemData> itemsList = new List<ItemData>();
+            List<ItemData> itemsList = new ();
             foreach (var item in items)
             {
                 if (item.IsActive == true) itemsList.Add(item);
