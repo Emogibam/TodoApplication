@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +39,19 @@ namespace TodoApplication
             options.UseSqlite(
                 Configuration.GetConnectionString("DefaultConnection")
                 ));
+
+            var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
+            var tokenValidationparams = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                RequireExpirationTime = false,
+            };
+            services.AddSingleton(tokenValidationparams);
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -46,18 +60,8 @@ namespace TodoApplication
             })
                  .AddJwtBearer(jwt =>
                  {
-                     var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
-
                      jwt.SaveToken = true;
-                     jwt.TokenValidationParameters = new TokenValidationParameters
-                     {
-                         ValidateIssuerSigningKey = true,
-                         IssuerSigningKey = new SymmetricSecurityKey(key),
-                         ValidateIssuer = false,
-                         ValidateAudience = false,
-                         ValidateLifetime = true,
-                         RequireExpirationTime = false,
-                     };
+                     jwt.TokenValidationParameters = tokenValidationparams;
                  });
             services.AddDefaultIdentity<IdentityUser>(options =>
             {
@@ -68,6 +72,14 @@ namespace TodoApplication
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TodoApplication", Version = "v1" });
+            });
+
+            services.AddApiVersioning(o =>
+            {
+                o.ReportApiVersions = true;
+                o.AssumeDefaultVersionWhenUnspecified = true;
+                o.DefaultApiVersion = new ApiVersion(1, 0);
+                o.ApiVersionReader = new HeaderApiVersionReader("api-version");
             });
         }
 
