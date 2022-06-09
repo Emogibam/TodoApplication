@@ -76,10 +76,11 @@ namespace TodoApplication
 
             services.AddApiVersioning(o =>
             {
-                o.ReportApiVersions = true;
                 o.AssumeDefaultVersionWhenUnspecified = true;
-                o.DefaultApiVersion = new ApiVersion(1, 0);
-                o.ApiVersionReader = new HeaderApiVersionReader("api-version");
+                o.ReportApiVersions = true;
+                //o.AssumeDefaultVersionWhenUnspecified = true;
+                o.DefaultApiVersion = ApiVersion.Default;
+               // o.ApiVersionReader = new HeaderApiVersionReader("api-version");
             });
         }
 
